@@ -16,9 +16,15 @@ router.get('', async (req, res) => {
                 json: true,
             }
             request.get(reqData, function (error, httpResponse, body) {
+                if (error) {
+                    return res.status(500).send();
+                }
                 Poet.findOne({ name: req.query.name }, (err, result) => {
                         console.log("RESSS",result)
                         var poet = result;
+                        if(err) {
+                            return res.status(500).send();
+                        }
                         if (!poet) {
                             var poetData = new Poet(_.pick(req.query, ['name', 'date']));
                             poetData.save().then((result) => {
@@ -26,14 +32,14 @@ router.get('', async (req, res) => {
                             });
                             Poet.find({},(err,array)=>{
                                 if(err){
-                                    res.status(500).send();
+                                    return res.status(500).send();
                                 }
                                 if(array.length >= 10){
                                     console.log(array);
                                     var deletedId = array[0]._id;
                                     Poet.findByIdAndDelete(deletedId,(err,delres)=>{
                                         if(err){
-                                            res.status(500).send();
+                                            return res.status(500).send();
                                         }
                                         console.log("DELETEDDD",delres);
                                     })
@@ -44,13 +50,8 @@ router.get('', async (req, res) => {
                                 console.log("UPDATED", result);
                             });
                         }
-                    
                 });
-                
-                res.status(200).send(body);
-                if (error) {
-                    res.status(500).send();
-                }
+                return res.status(200).send(body);
             })
         }
     }
@@ -65,9 +66,9 @@ router.post('/recent', async (req, res) => {
     try {
         Poet.find({},(err,result)=>{
             if(err){
-                res.status(500).send();
+                return res.status(500).send();
             }
-            res.status(200).send(result);
+            return res.status(200).send(result);
         }).sort({date : -1});
     }
     catch (err) {
@@ -84,10 +85,10 @@ router.get('/suggestions', async (req, res) => {
                 json: true,
             }
             request.get(reqData, function (error, httpResponse, body) {
-                res.status(200).send(body);
                 if (error) {
-                    res.status(500).send();
+                    return res.status(500).send();
                 }
+                return res.status(200).send(body);
             })
         }
     }
